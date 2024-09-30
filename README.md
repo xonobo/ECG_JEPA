@@ -9,10 +9,10 @@ pip install -r requirements.txt
 ### Pretrain the Model Yourself
 To pretrain the ECG-JEPA model, run one of the following commands in the terminal:
 
-For random masking:
+For random masking\
 python pretrain_ECG_JEPA.py --mask_type rand --mask_scale 0.6 0.7 --batch_size 128 --lr 2.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
 
-For multi-block masking:
+For multi-block masking:\
 python pretrain_ECG_JEPA.py --mask_type block --mask_scale 0.175 0.225 --batch_size 64 --lr 5.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
 
 - PATH_TO_SHAOXING should be the path to the directory: 'path_to_data/ecg-arrhythmia/1.0.0/WFDBRecords'.
@@ -40,13 +40,11 @@ wget -r -N -c -np https://physionet.org/files/challenge-2020/1.0.2/training/cpsc
 
 ## Downstream Tasks
 ### Linear Evaluation 
-Run the following command for the linear evaluation on ptbxl multi-linear task:
+Run the following command for the linear evaluation on ptbxl multi-label task:\
+cd downstream_tasks python linear_eval.py --model_name ejepa_random --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
 
-cd downstream_tasks
-python linear_eval.py --model_name ejepa_random --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilinear
-
-For ECG-JEPA multi-block masking, run:
-python linear_eval.py --model_name ejepa_multiblock --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilinear
+For ECG-JEPA multi-block masking, run:\
+cd downstream_tasks python linear_eval.py --model_name ejepa_multiblock --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
 
 Log files for the above two runs exist in './downstream_tasks/output/linear_eval/'.
 
