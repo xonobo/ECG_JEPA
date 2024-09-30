@@ -24,7 +24,7 @@ Pretrained checkpoints are available at the following links:
 - ECG-JEPA (random masking): https://drive.google.com/file/d/1mh-XL0XOvvhFbhvuZ9c2KnTHa9B4F3Wx/view?usp=drive_link
 - ECG-JEPA (multi-block masking): https://drive.google.com/file/d/1gMOT4xjQQg0GZkY1iE6NuDzua4ALw00l/view?usp=drive_link
 
-Please download the pretrained checkpoints and save them in the ./weights/ directory.
+Please download the pretrained checkpoints and save them in the ./weights/
 
 ## Downstream Datasets
 You can find information about the datasets used in this project here:
