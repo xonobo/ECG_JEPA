@@ -59,12 +59,14 @@ For linear evaluation on the PTB-XL multi-label task:
 
 **ECG-JEPA with random masking**
 ```console
-cd downstream_tasks python linear_eval.py --model_name ejepa_random --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
+cd downstream_tasks
+python linear_eval.py --model_name ejepa_random --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
 ```
 
 **ECG-JEPA with multi-block masking**
 ```console
-cd downstream_tasks python linear_eval.py --model_name ejepa_multiblock --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
+cd downstream_tasks
+python linear_eval.py --model_name ejepa_multiblock --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
 ```
 
 Log files are saved in `./downstream_tasks/output/linear_eval/`.
