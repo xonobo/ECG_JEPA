@@ -173,7 +173,7 @@ if __name__ == '__main__':
     config = parse()
 
     pretrained_ckpt_dir = {
-        'ejepa_random': f"../weights/random_epoch100.pth",
+        'ejepa_random': f"../weights/randomblock_epoch100.pth",
         'ejepa_multiblock': f"../weights/multiblock_epoch100.pth",
         # 'cmsc': "../weights/shao+code15/CMSC/epoch300.pth",
         # 'cpc': "../weights/shao+code15/cpc/base_epoch100.pth",
