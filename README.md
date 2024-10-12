@@ -1,9 +1,14 @@
 # ECG-JEPA: Learning General Representation of 12-Lead Electrocardiogram With a Joint-Embedding Predictive Architecture
 
-## Environment Setup
-### Requirements
-Install the required dependencies by running:
-pip install -r requirements.txt
+### Installation
+```console
+(base) user@server:~$ conda create -name ecg_jepa python=3.9
+(base) user@server:~$ conda activate ecg_jepa
+(ecg_jepa) user@server:~$ conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
+(ecg_jepa) user@server:~$ git clone https://github.com/sehunfromdaegu/ECG_JEPA.git
+(ecg_jepa) user@server:~$ cd ECG_JEPA
+(ecg_jepa) user@server:~/ECG_JEPA$ pip install -r requirements.txt
+```
 
 ## Pretraining
 ### Pretrain the Model Yourself
