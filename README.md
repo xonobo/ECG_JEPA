@@ -2,12 +2,12 @@
 
 ### Installation
 ```console
-(base) user@server:~$ conda create --name ecg_jepa python=3.9
-(base) user@server:~$ conda activate ecg_jepa
-(ecg_jepa) user@server:~$ conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
-(ecg_jepa) user@server:~$ git clone https://github.com/sehunfromdaegu/ECG_JEPA.git
-(ecg_jepa) user@server:~$ cd ECG_JEPA
-(ecg_jepa) user@server:~/ECG_JEPA$ pip install -r requirements.txt
+conda create --name ecg_jepa python=3.9
+conda activate ecg_jepa
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
+git clone https://github.com/sehunfromdaegu/ECG_JEPA.git
+cd ECG_JEPA
+pip install -r requirements.txt
 ```
 
 ## Pretraining
@@ -16,12 +16,12 @@ To pretrain the ECG-JEPA model, run one of the following commands in the termina
 
 For random masking\
 ```console
-(ecg_jepa) user@server:~/ECG_JEPA$ python pretrain_ECG_JEPA.py --mask_type rand --mask_scale 0.6 0.7 --batch_size 128 --lr 2.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
+python pretrain_ECG_JEPA.py --mask_type rand --mask_scale 0.6 0.7 --batch_size 128 --lr 2.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
 ```
 
 For multi-block masking:\
 ```console
-(ecg_jepa) user@server:~/ECG_JEPA$ python pretrain_ECG_JEPA.py --mask_type block --mask_scale 0.175 0.225 --batch_size 64 --lr 5.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
+python pretrain_ECG_JEPA.py --mask_type block --mask_scale 0.175 0.225 --batch_size 64 --lr 5.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
 ```
 
 - `PATH_TO_SHAOXING` should be the path to the directory `path_to_data/ecg-arrhythmia/1.0.0/WFDBRecords`.
