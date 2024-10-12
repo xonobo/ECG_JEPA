@@ -2,7 +2,7 @@
 
 ### Installation
 ```console
-(base) user@server:~$ conda create -name ecg_jepa python=3.9
+(base) user@server:~$ conda create --name ecg_jepa python=3.9
 (base) user@server:~$ conda activate ecg_jepa
 (ecg_jepa) user@server:~$ conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
 (ecg_jepa) user@server:~$ git clone https://github.com/sehunfromdaegu/ECG_JEPA.git
