@@ -60,12 +60,12 @@ os.makedirs(save_dir, exist_ok=True)
 start_time = time.time()
 
 # Shaoxing (Ningbo + Chapman)
-waves_shao = waves_shao(data_dir_shao)
-waves_shao = downsample_waves(waves_shao, 2500)
-print(f'Shao waves shape: {waves_shao.shape}')
-logging.info(f'Shao waves shape: {waves_shao.shape}')
+waves_shaoxing = waves_shao(data_dir_shao)
+waves_shaoxing = downsample_waves(waves_shaoxing, 2500)
+print(f'Shao waves shape: {waves_shaoxing.shape}')
+logging.info(f'Shao waves shape: {waves_shaoxing.shape}')
 
-dataset = ECGDataset_pretrain(waves_shao)
+dataset = ECGDataset_pretrain(waves_shaoxing)
 
 # Code15
 dataset_code15 = Code15Dataset(data_dir_code15)
@@ -77,7 +77,7 @@ print(f'Data loading time: {loading_time:.2f}s')
 
 dataset = ConcatDataset([dataset, dataset_code15])
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=16)
-del waves_shao
+del waves_shaoxing
 
 model = Time_jepa(encoder_embed_dim=768, 
                 encoder_depth=12, 
