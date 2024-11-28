@@ -279,7 +279,7 @@ def waves_cpsc(data_dir, task='multilabel', reduced_lead=True, downsample=True):
     minibatches = []
 
     for minibatch in subdirectory(data_dir):
-        ecg_data, ecg_labels = get_ecg_data(os.path.join(data_dir, minibatch), dx=True)
+        ecg_data, ecg_labels = get_ecg_data(os.path.join(data_dir, minibatch), reduced_lead=True,  dx=True)
         waves_cpsc.append(ecg_data)
         labels_cpsc.append(ecg_labels)
         minibatches.extend([minibatch] * len(ecg_data))
@@ -299,10 +299,6 @@ def waves_cpsc(data_dir, task='multilabel', reduced_lead=True, downsample=True):
     waves_cpsc = waves_cpsc[valid_indices]
     labels_cpsc = labels_cpsc[valid_indices]
     minibatches = minibatches[valid_indices]
-
-    waves_cpsc = waves_cpsc.transpose(0, 2, 1)
-    if reduced_lead:
-        waves_cpsc = np.concatenate((waves_cpsc[:, :2, :], waves_cpsc[:, 6:, :]), axis=1)
 
     if downsample:
         waves_cpsc = downsample_waves(waves_cpsc, 2500)
@@ -359,13 +355,13 @@ def convert_to_multiclass(waves, labels):
     return waves, labels
 
 def waves_from_config(config, reduced_lead=True):
-    model_name = config['model_name']
+    # model_name = config['model_name']
     data_dir = config['data_dir']
     dataset = config['dataset']
     task = config['task']
 
-    if model_name == 'st_mem':
-        reduced_lead = False
+    # if model_name == 'st_mem':
+    #     reduced_lead = False
 
     if dataset == 'ptbxl':
         waves_train, waves_test, labels_train, labels_test = waves_ptbxl(data_dir, task, reduced_lead=reduced_lead)
@@ -373,9 +369,9 @@ def waves_from_config(config, reduced_lead=True):
     elif dataset == 'cpsc':
         waves_train, waves_test, labels_train, labels_test = waves_cpsc(data_dir, task, reduced_lead=reduced_lead)
 
-    # st_mem needs shorter waves 
-    if model_name == 'st_mem':
-        waves_train = waves_train[:, :, 125:-125]
-        waves_test = waves_test[:, :, 125:-125]
+    # # st_mem needs shorter waves 
+    # if model_name == 'st_mem':
+    #     waves_train = waves_train[:, :, 125:-125]
+    #     waves_test = waves_test[:, :, 125:-125]
 
     return waves_train, waves_test, labels_train, labels_test

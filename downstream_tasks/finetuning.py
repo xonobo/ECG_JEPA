@@ -31,13 +31,13 @@ from models import load_encoder
 def parse():
     parser = argparse.ArgumentParser('ECG downstream training')
 
-    parser.add_argument('--model_name',
-                        default="mvt_larger_larger",
-                        type=str,
-                        help='resume from checkpoint')
+    # parser.add_argument('--model_name',
+    #                     default="mvt_larger_larger",
+    #                     type=str,
+    #                     help='resume from checkpoint')
     
     parser.add_argument('--ckpt_dir',
-                        default="",
+                        default="../weights/multiblock_epoch100.pth",
                         type=str,
                         metavar='PATH',
                         help='pretrained encoder checkpoint')
@@ -54,12 +54,12 @@ def parse():
                         help='dataset name')
     
     parser.add_argument('--data_dir',
-                        default="/mount/ecg/ptb-xl-1.0.3",
+                        default="/mount/ecg/ptb-xl-1.0.3/",
                         type=str,
                         help='dataset directory')
     
     parser.add_argument('--task',
-                        default="multilabel",
+                        default="multiclass",
                         type=str,
                         help='downstream task')
     
@@ -74,7 +74,7 @@ def parse():
     args, unknown = parser.parse_known_args()
 
 
-    with open(os.path.realpath(f'../configs/downstream/finetuning/fine_tuning_{args.model_name}.yaml'), 'r') as f:
+    with open(os.path.realpath(f'../configs/downstream/finetuning/fine_tuning_ejepa.yaml'), 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
 
@@ -91,8 +91,9 @@ def main(config):
     current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
 
     # Create log filename with current time
+    ckpt_name = os.path.splitext(os.path.basename(config['ckpt_dir']))[0]
     log_filename = os.path.join(config['output_dir'], 
-                                f'log_{config["model_name"]}_{config["task"]}_{config["dataset"]}_{current_time}.txt')
+                                f'log_{ckpt_name}_{config["task"]}_{config["dataset"]}_{current_time}.txt')
     
     # Configure logging
     logging.basicConfig(filename=log_filename,
@@ -117,10 +118,10 @@ def main(config):
     'eval_transforms': [{'highpass_filter': {'fs': 250, 'cutoff': 0.67}}, {'lowpass_filter': {'fs': 250, 'cutoff': 40}} ]
     }
 
-    # st_mem model requires shorter input length
-    if config['model_name'] == 'st_mem':
-        aug['train_transforms'].append({'random_crop': {'crop_length': 2250}})
-        aug['eval_transforms'].append({'random_crop': {'crop_length': 2250}})
+    # # st_mem model requires shorter input length
+    # if config['model_name'] == 'st_mem':
+    #     aug['train_transforms'].append({'random_crop': {'crop_length': 2250}})
+    #     aug['eval_transforms'].append({'random_crop': {'crop_length': 2250}})
 
     train_transforms = get_transforms_from_config(aug["train_transforms"])
     randaug_config = aug.get("rand_augment", {})
@@ -160,7 +161,7 @@ def main(config):
 
     logging.info(f'Loading encoder from {config["ckpt_dir"]}...')
     print(f'Loading encoder from {config["ckpt_dir"]}...')
-    encoder, embed_dim = load_encoder(model_name=config['model_name'], ckpt_dir=config['ckpt_dir'])
+    encoder, embed_dim = load_encoder(ckpt_dir=config['ckpt_dir'])
     encoder = encoder.to(device)
     model = FinetuningClassifier(encoder, encoder_dim=embed_dim, num_labels=n).to(device)
 
@@ -236,19 +237,19 @@ if __name__ == '__main__':
     config = parse()
 
 
-    pretrained_ckpt_dir = {
-        'ejepa_random': f"../weights/random_epoch100.pth",
-        'ejepa_multiblock': f"../weights/multiblock_epoch100.pth",
-        # 'cmsc': "../weights/shao+code15/CMSC/epoch300.pth",
-        # 'cpc': "../weights/shao+code15/cpc/base_epoch100.pth",
-        # 'simclr': "../weights/shao+code15/SimCLR/epoch300.pth",
-        # 'st_mem': "../weights/shao+code15/st_mem/st_mem_vit_base.pth",
-    }
+    # pretrained_ckpt_dir = {
+    #     'ejepa_random': f"../weights/random_epoch100.pth",
+    #     'ejepa_multiblock': f"../weights/multiblock_epoch100.pth",
+    #     # 'cmsc': "../weights/shao+code15/CMSC/epoch300.pth",
+    #     # 'cpc': "../weights/shao+code15/cpc/base_epoch100.pth",
+    #     # 'simclr': "../weights/shao+code15/SimCLR/epoch300.pth",
+    #     # 'st_mem': "../weights/shao+code15/st_mem/st_mem_vit_base.pth",
+    # }
         
 
-    # pretrained_ckpt_dir['mvt_larger_larger'] = f"../weights/shao+code15/block_masking/jepa_v4_20240720_215455_(0.175, 0.225)/epoch{100}.pth"
+    # # pretrained_ckpt_dir['mvt_larger_larger'] = f"../weights/shao+code15/block_masking/jepa_v4_20240720_215455_(0.175, 0.225)/epoch{100}.pth"
 
-    config['ckpt_dir'] = pretrained_ckpt_dir[config['model_name']]
+    # config['ckpt_dir'] = pretrained_ckpt_dir[config['model_name']]
 
     main(config)
 

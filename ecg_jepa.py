@@ -1,10 +1,3 @@
-
-'''
-(ver2) In this version, masking is a tensor of boolean values. 
-Also, encoder inputs are the whole nbd, and mask.
-(ver3) in this version, cross attention is not applied to predictor
-(ver4) Implemented "multi-block masking"
-'''
 import copy
 import math
 import torch
@@ -180,7 +173,7 @@ class MaskTransformer(nn.Module):
                 init_std=0.02,
                 mask_scale=(0.3, .5),
                 mask_type='block',
-                pos_type='learnable',
+                pos_type='sincos',
                 c=8,
                 p=50,
                 t=50,
@@ -290,7 +283,7 @@ class MaskTransformer(nn.Module):
 
         # Generate or use provided mask   
         if mask is None:
-            if self.mask_type == 'rand':
+            if self.mask_type == 'random':
                 mask_idx = self._make_rand_mask(self.mask_scale)
             elif self.mask_type == 'block':
                 mask_idx = self._make_block_mask(self.mask_scale)
@@ -378,7 +371,7 @@ class MaskTransformerPredictor(nn.Module):
                 drop_path_rate=0.0,
                 norm_layer=nn.LayerNorm,
                 init_std=0.02,  
-                pos_type='learnable',
+                pos_type='sincos',
                 c=9,
                 p=50,
                 t=50,  
@@ -465,7 +458,7 @@ class MaskTransformerPredictor(nn.Module):
         return x
 
 
-class Time_jepa(nn.Module):
+class ecg_jepa(nn.Module):
     def __init__(
                 self, 
                 encoder_embed_dim=384,

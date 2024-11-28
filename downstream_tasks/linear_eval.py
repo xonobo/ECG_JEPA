@@ -24,13 +24,13 @@ import torch.nn as nn
 def parse():
     parser = argparse.ArgumentParser('ECG downstream training')
 
-    parser.add_argument('--model_name',
-                        default="ejepa_random",
-                        type=str,
-                        help='resume from checkpoint')
+    # parser.add_argument('--model_name',
+    #                     default="ejepa_random",
+    #                     type=str,
+    #                     help='resume from checkpoint')
     
     parser.add_argument('--ckpt_dir',
-                        default="",
+                        default="../weights/multiblock_epoch100.pth",
                         type=str,
                         metavar='PATH',
                         help='pretrained encoder checkpoint')
@@ -47,7 +47,7 @@ def parse():
                         help='dataset name')
     
     parser.add_argument('--data_dir',
-                        default="/mount/ecg/ptb-xl-1.0.3",
+                        default="/mount/ecg/ptb-xl-1.0.3/", # "/mount/ecg/cpsc_2018/"
                         type=str,
                         help='dataset directory')
     
@@ -65,7 +65,7 @@ def parse():
     # Use parse_known_args instead of parse_args
     args, unknown = parser.parse_known_args()
 
-    with open(os.path.realpath(f'../configs/downstream/linear_eval/linear_eval_{args.model_name}.yaml'), 'r') as f:
+    with open(os.path.realpath(f'../configs/downstream/linear_eval/linear_eval_ejepa.yaml'), 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     for k, v in vars(args).items():
@@ -80,8 +80,9 @@ def main(config):
     current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
 
     # Create log filename with current time
+    ckpt_name = os.path.splitext(os.path.basename(config['ckpt_dir']))[0]
     log_filename = os.path.join(config['output_dir'], 
-                                f'log_{config["model_name"]}_{config["task"]}_{config["dataset"]}_{current_time}.txt')
+                                f'log_{ckpt_name}_{config["task"]}_{config["dataset"]}_{current_time}.txt')
     
     # Configure logging
     logging.basicConfig(filename=log_filename,
@@ -109,7 +110,7 @@ def main(config):
  
     logging.info(f'Loading encoder from {config["ckpt_dir"]}...')
     print(f'Loading encoder from {config["ckpt_dir"]}...')
-    encoder, embed_dim = load_encoder(model_name=config['model_name'], ckpt_dir=config['ckpt_dir'])
+    encoder, embed_dim = load_encoder(ckpt_dir=config['ckpt_dir'])
     encoder = encoder.to(device)
 
     encoder.eval()
@@ -168,23 +169,19 @@ def main(config):
     std_f1 = np.std(F1s)
     logging.info(f"Mean AUC: {mean_auc:.3f} +- {std_auc:.3f}, Mean F1: {mean_f1:.3f} +- {std_f1:.3f}")
     print(f"Mean AUC: {mean_auc:.3f} +- {std_auc:.3f}, Mean F1: {mean_f1:.3f} +- {std_f1:.3f}")
-
+    
 if __name__ == '__main__':
     config = parse()
 
-    pretrained_ckpt_dir = {
-        'ejepa_random': f"../weights/random_epoch100.pth",
-        'ejepa_multiblock': f"../weights/multiblock_epoch100.pth",
-        # 'cmsc': "../weights/shao+code15/CMSC/epoch300.pth",
-        # 'cpc': "../weights/shao+code15/cpc/base_epoch100.pth",
-        # 'simclr': "../weights/shao+code15/SimCLR/epoch300.pth",
-        # 'st_mem': "../weights/shao+code15/st_mem/st_mem_vit_base.pth",
-    }
+    # pretrained_ckpt_dir = {
+    #     'ejepa_random': f"../weights/randomblock_epoch100.pth",
+    #     'ejepa_multiblock': f"../weights/multiblock_epoch100.pth",
+    #     # 'cmsc': "../weights/shao+code15/CMSC/epoch300.pth",
+    #     # 'cpc': "../weights/shao+code15/cpc/base_epoch100.pth",
+    #     # 'simclr': "../weights/shao+code15/SimCLR/epoch300.pth",
+    #     # 'st_mem': "../weights/shao+code15/st_mem/st_mem_vit_base.pth",
+    # }
         
-    config['ckpt_dir'] = pretrained_ckpt_dir[config['model_name']]
+    # config['ckpt_dir'] = pretrained_ckpt_dir[config['model_name']]
 
     main(config)
-
-
-
-

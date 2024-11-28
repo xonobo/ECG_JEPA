@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, ConcatDataset
 from scipy.signal import resample
 import time
 from torch.cuda.amp import GradScaler, autocast
-from time_jepa_ver4 import Time_jepa
+from ecg_jepa import ecg_jepa
 from timm.scheduler import CosineLRScheduler
 from ecg_data import *
 import argparse
@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description="Pretrain the JEPA model with ECG d
 parser.add_argument('--mask_scale', type=float, nargs=2, default=[0.175, 0.225], help="Scale of masking")
 parser.add_argument('--batch_size', type=int, default=64, help="Batch size")
 parser.add_argument('--lr', type=float, default=5e-5, help="Learning rate")
-parser.add_argument('--mask_type', type=str, default='block', help="Type of masking") # 'block' or 'rand'
+parser.add_argument('--mask_type', type=str, default='block', help="Type of masking") # 'block' or 'random'
 parser.add_argument('--epochs', type=int, default=100, help="Number of epochs")
 parser.add_argument('--wd', type=float, default=0.05, help="Weight decay")
 parser.add_argument('--data_dir_shao', type=str, default='/mount/ecg/physionet.org/files/ecg-arrhythmia/1.0.0/WFDBRecords/', help="Directory for Shaoxing data")
@@ -69,8 +69,8 @@ dataset = ECGDataset_pretrain(waves_shaoxing)
 
 # Code15
 dataset_code15 = Code15Dataset(data_dir_code15)
-print(f'Code15 waves shape: ({len(dataset_code15.file_indices)},8,2500)')
-logging.info(f'Code15 waves shape: ({len(dataset_code15.file_indices)},8,2500)')
+print(f'Code15 waves shape: ({len(dataset_code15.file_indices)}, 8, 2500)')
+logging.info(f'Code15 waves shape: ({len(dataset_code15.file_indices)}, 8, 2500)')
 
 loading_time = time.time() - start_time
 print(f'Data loading time: {loading_time:.2f}s')
@@ -79,7 +79,7 @@ dataset = ConcatDataset([dataset, dataset_code15])
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=16)
 del waves_shaoxing
 
-model = Time_jepa(encoder_embed_dim=768, 
+model = ecg_jepa(encoder_embed_dim=768, 
                 encoder_depth=12, 
                 encoder_num_heads=16,
                 predictor_embed_dim=384,
@@ -87,6 +87,7 @@ model = Time_jepa(encoder_embed_dim=768,
                 predictor_num_heads=12,
                 drop_path_rate=0.1,
                 mask_scale=mask_scale,
+                mask_type=mask_type,
                 pos_type='sincos',
                 c=8,
                 p=50,
@@ -110,9 +111,9 @@ scheduler = CosineLRScheduler(optimizer,
         lr_min=1e-6,
         cycle_decay=0.1,
         warmup_lr_init=1e-6,
-        warmup_t=30*iterations_per_epoch,
+        warmup_t=5*iterations_per_epoch,
         cycle_limit=1,
-        t_in_epochs=False)
+        t_in_epochs=True)
 
 ema = [0.996,1.0]
 momentum_target_encoder_scheduler = (ema[0] + i*(ema[1]-ema[0])/(iterations_per_epoch*epochs) for i in range(int(iterations_per_epoch*epochs)+1))

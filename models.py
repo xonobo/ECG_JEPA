@@ -1,12 +1,7 @@
 import torch
-from time_jepa_ver4 import Time_jepa
+from ecg_jepa import ecg_jepa
 
-def load_encoder(model_name, ckpt_dir, leads=None):
-    model_names = ['ejepa_random', 'ejepa_multiblock']
-    assert model_name in model_names, f"Model name must be one of {model_names}"
-
-    if leads is not None:
-        assert model_name in ['ejepa_random', 'ejepa_multiblock'], f"Model {model_name} does not support reduced leads"
+def load_encoder(ckpt_dir, leads=None):
 
     if leads is None:
         leads = [0,1,2,3,4,5,6,7]
@@ -21,13 +16,11 @@ def load_encoder(model_name, ckpt_dir, leads=None):
         'c': 8,
         'pos_type': 'sincos',
         'mask_scale': (0, 0),
-        'mask_type': 'multiblock' if model_name == 'ejepa_multiblock' else 'random',
         'leads': leads
     }
-    encoder = Time_jepa(**params).encoder
+    encoder = ecg_jepa(**params).encoder
     ckpt = torch.load(ckpt_dir)
     encoder.load_state_dict(ckpt['encoder'])
     embed_dim = 768
-
 
     return encoder, embed_dim
