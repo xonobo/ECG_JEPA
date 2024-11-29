@@ -62,7 +62,7 @@ def parse():
                         default="multiclass",
                         type=str,
                         help='downstream task')
-    
+
     parser.add_argument('--data_percentage',
                         default=1.0,
                         type=float,
