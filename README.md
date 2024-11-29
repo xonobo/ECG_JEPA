@@ -10,13 +10,16 @@ cd ECG_JEPA
 pip install -r requirements.txt
 ```
 
+## Tutorial
+tutorial.ipynb demonstrates how to use the pretrained ECG-JEPA.
+
 ## Pretraining
 ### Pretrain the Model Yourself
 To pretrain the ECG-JEPA model, run one of the following commands in the terminal:
 
 For random masking\
 ```console
-python pretrain_ECG_JEPA.py --mask_type rand --mask_scale 0.6 0.7 --batch_size 128 --lr 2.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
+python pretrain_ECG_JEPA.py --mask_type random --mask_scale 0.6 0.7 --batch_size 128 --lr 2.5e-5 --data_dir_shao PATH_TO_SHAOXING --data_dir_code15 PATH_TO_CODE15
 ```
 
 For multi-block masking:\
@@ -56,28 +59,16 @@ wget -r -N -c -np https://physionet.org/files/challenge-2020/1.0.2/training/cpsc
 ## Downstream Tasks
 ### Linear Evaluation 
 For linear evaluation on the PTB-XL multi-label task:
-
-**ECG-JEPA with random masking**
 ```console
 cd downstream_tasks
-python linear_eval.py --model_name ejepa_random --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
+python linear_eval.py --ckpt_dir CKPT_DIR --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
 ```
-
-**ECG-JEPA with multi-block masking**
-```console
-cd downstream_tasks
-python linear_eval.py --model_name ejepa_multiblock --dataset ptbxl --data_dir PATH_TO_PTBXL --task multilabel
-```
+`CKPT_DIR` is the file location of the pretrained weights.
 
 Log files are saved in `./downstream_tasks/output/linear_eval/`.
 
-- `PATH_TO_PTBXL`: Directory containing:
-  -  records100
-  -  records500
-  -  index.html
-  -  LICENSE.txt
-  -  RECORDS    
- 
+- `PATH_TO_PTBXL`: Directory containing [records100, records500, index.html, LICENSE.txt, RECORDS]
+
 
 
 Alternatively, replace `PATH_TO_PTBXL` with `PATH_TO_CPSC2018`, which should contain subdirectories `g1`, `g2`, ..., `g7`.
@@ -91,7 +82,7 @@ cd downstream_tasks
 python finetuning.py --model_name ejepa_random --dataset ptbxl --data_dir PATH_TO_PTBXL --task multiclass
 ```
 
-*ECG-JEPA with random masking:*
+*ECG-JEPA with multiblock masking:*
 ```console
 cd downstream_tasks
 python finetuning.py --model_name ejepa_multiblock --dataset ptbxl --data_dir PATH_TO_PTBXL --task multiclass
