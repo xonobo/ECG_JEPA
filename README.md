@@ -1,4 +1,6 @@
 # ECG-JEPA: Learning General Representation of 12-Lead Electrocardiogram With a Joint-Embedding Predictive Architecture
+Official implementation for ECG-JEPA.
+[\[arXiv\]](https://arxiv.org/pdf/2410.08559)
 
 ### Installation
 ```console
