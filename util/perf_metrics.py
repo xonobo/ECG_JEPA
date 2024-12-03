@@ -17,7 +17,7 @@ def build_metric_fn(config: dict) -> Tuple[torchmetrics.Metric, Dict[str, float]
         common_metric_fn_kwargs["num_classes"] = config["num_classes"]
     elif config["task"] == "multilabel":
         assert "num_labels" in config, "num_labels must be provided for multilabel task"
-        common_metric_fn_kwargs["num_classes"] = config["num_labels"]
+        common_metric_fn_kwargs["num_labels"] = config["num_labels"]
 
 
     metric_list = []
