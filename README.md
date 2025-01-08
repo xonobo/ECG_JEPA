@@ -2,6 +2,12 @@
 Official implementation for ECG-JEPA.
 [\[arXiv\]](https://arxiv.org/pdf/2410.08559)
 
+### Model Performance
+
+The figure demonstrates the efficiency and effectiveness of ECG-JEPA compared to other models!
+![Linear Evaluation on PTB-XL vs GPU Hours](./linear_evaluation_gpu_hours.png)
+
+
 ### Installation
 ```console
 conda create --name ecg_jepa python=3.9
