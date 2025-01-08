@@ -4,8 +4,7 @@ Official implementation for ECG-JEPA.
 
 ### Model Performance
 
-The figure demonstrates the efficiency and effectiveness of ECG-JEPA compared to other models!
-![Linear Evaluation on PTB-XL vs GPU Hours](./linear_evaluation_gpu_hours.png)
+<img src="./model_comparison.png" alt="Linear Evaluation on PTB-XL vs GPU Hours" style="width: 50%; height: auto;" />
 
 
 ### Installation
