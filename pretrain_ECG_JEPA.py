@@ -6,11 +6,16 @@ import numpy as np
 from torch.utils.data import DataLoader, ConcatDataset
 from scipy.signal import resample
 import time
-from torch.cuda.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
 from ecg_jepa import ecg_jepa
 from timm.scheduler import CosineLRScheduler
 from ecg_data import *
 import argparse
+from tqdm import tqdm
+
+# Set the environment variable for PyTorch CUDA memory allocation
+# os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 def downsample_waves(waves, new_size):
     return np.array([resample(wave, new_size, axis=1) for wave in waves])
@@ -23,10 +28,12 @@ parser.add_argument('--lr', type=float, default=5e-5, help="Learning rate")
 parser.add_argument('--mask_type', type=str, default='block', help="Type of masking") # 'block' or 'random'
 parser.add_argument('--epochs', type=int, default=100, help="Number of epochs")
 parser.add_argument('--wd', type=float, default=0.05, help="Weight decay")
-parser.add_argument('--data_dir_shao', type=str, default='/mount/ecg/physionet.org/files/ecg-arrhythmia/1.0.0/WFDBRecords/', help="Directory for Shaoxing data")
-parser.add_argument('--data_dir_code15', type=str, default='/mount/ecg/code15', help="Directory for Code15 data")
+parser.add_argument('--data_dir_shao', type=str, default='/DiskBadem_1/public_datasets/ECG/physionet.org/files/ecg-arrhythmia/1.0.0/WFDBRecords/', help="Directory for Shaoxing data")
+parser.add_argument('--data_dir_code15', type=str, default='/DiskBadem_1/public_datasets/ECG/cinc2025/code15_hdf5', help="Directory for Code15 data")
 
 args = parser.parse_args()
+
+max_mini_mini_batch = 32
 
 # Access the arguments like this
 mask_scale = tuple(args.mask_scale)
@@ -76,7 +83,7 @@ loading_time = time.time() - start_time
 print(f'Data loading time: {loading_time:.2f}s')
 
 dataset = ConcatDataset([dataset, dataset_code15])
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=16)
+train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=16, drop_last=True)
 del waves_shaoxing
 
 model = ecg_jepa(encoder_embed_dim=768, 
@@ -124,30 +131,50 @@ log_params(hyperparameters)
 
 scaler = GradScaler()
 
+N = batch_size // max_mini_mini_batch
+
 for epoch in range(epochs):
     start_time = time.time()
     model.train()
     total_loss = 0.
-    for minibatch, wave in enumerate(train_loader):
+    for minibatch, wave in tqdm(enumerate(train_loader), total=len(train_loader)):
         scheduler.step(epoch * iterations_per_epoch + minibatch)
         bs, c, t = wave.shape
-        wave = wave.to('cuda')
+        
+        # Split the batch into N smaller batches
+        sub_batches = torch.split(wave, bs // N)
 
         optimizer.zero_grad()
-        with autocast():  # Enable mixed precision
-            loss = model(wave)    
-
-        # Scale the loss and backward pass
-        scaler.scale(loss).backward()
+        total_sub_loss = 0.
+        
+        for sub_wave in sub_batches:
+            sub_wave = sub_wave.to('cuda')
+            with autocast('cuda'):  # Enable mixed precision
+                sub_loss = model(sub_wave)
+            scaler.scale(sub_loss).backward()
+            total_sub_loss += sub_loss.item()
+        del sub_wave  # Free memory
+        
+        # Step the optimizer and update the scaler
         scaler.step(optimizer)
-        scaler.update()    
+        scaler.update()
 
-        total_loss += loss.item()
+        total_loss += total_sub_loss / N
 
+        # EMA update of target_encoder
         with torch.no_grad():
             m = next(momentum_target_encoder_scheduler)
             for param_q, param_k in zip(model.encoder.parameters(), model.target_encoder.parameters()):
                 param_k.data.mul_(m).add_((1.0 - m) * param_q.detach().data)
+
+        # # Monitor GPU memory usage
+        # print(f'Iteration {minibatch}: Allocated memory: {torch.cuda.memory_allocated() / 1024**2:.2f} MB, Reserved memory: {torch.cuda.memory_reserved() / 1024**2:.2f} MB')
+
+        # Clear cache
+        torch.cuda.empty_cache()
+        
+        # print(f'Iteration {minibatch}: Allocated memory: {torch.cuda.memory_allocated() / 1024**2:.2f} MB, Reserved memory: {torch.cuda.memory_reserved() / 1024**2:.2f} MB')
+        # print('')
 
     total_loss /= len(train_loader)
     epoch_time = time.time() - start_time
@@ -157,6 +184,8 @@ for epoch in range(epochs):
     if epoch > 1 and (epoch + 1) % 5 == 0:
         model.to('cpu')
         torch.save({'encoder': model.encoder.state_dict(),
+                    'predictor': model.predictor.state_dict(),
+                    'target_encoder': model.target_encoder.state_dict(),
                     'epoch': epoch,
                     }, f'{save_dir}/epoch{epoch + 1}.pth')
         model.to('cuda')
