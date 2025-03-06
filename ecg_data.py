@@ -148,7 +148,7 @@ def waves_cinc(data_dir, reduced_lead=True):
 
 def waves_shao(data_dir, reduced_lead=True):
     waves = []
-    for subdir in subdirectory(data_dir):
+    for subdir in tqdm(subdirectory(data_dir)):
         for minibatch in subdirectory(os.path.join(data_dir, subdir)):
             ecg_data = get_ecg_data(os.path.join(data_dir, subdir, minibatch), reduced_lead=reduced_lead)
             waves.append(ecg_data)
